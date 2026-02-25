@@ -28,7 +28,7 @@ export function DisagreementHeatmap({ bundle }: DisagreementHeatmapProps) {
   const validatorDiff = Math.abs(100 - bundle.validator_score.overallScore)
 
   const getDiffColor = (diff: number) => {
-    if (diff < 5) return "bg-green-500/20 text-green-400 border-green-500/30"
+    if (diff < 5) return "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
     if (diff < 15) return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
     return "bg-red-500/20 text-red-400 border-red-500/30"
   }
@@ -129,7 +129,7 @@ export function DisagreementHeatmap({ bundle }: DisagreementHeatmapProps) {
                       <div 
                         className={`w-full h-full flex flex-col items-center justify-center rounded-lg border ${getDiffColor(value || 0)} relative overflow-hidden`}
                         style={{
-                          backgroundColor: `rgba(172, 47, 255, ${getDiffIntensity(value || 0) * 0.3})`
+                          backgroundColor: `rgba(124, 58, 237, ${getDiffIntensity(value || 0) * 0.3})`
                         }}
                       >
                         <motion.div
@@ -166,7 +166,7 @@ export function DisagreementHeatmap({ bundle }: DisagreementHeatmapProps) {
       >
         <span className="text-muted-foreground">Divergence Level:</span>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-green-500/20 border border-green-500/30" />
+          <div className="w-3 h-3 rounded bg-cyan-500/20 border border-cyan-500/30" />
           <span className="text-muted-foreground">Low (&lt;5%)</span>
         </div>
         <div className="flex items-center gap-2">

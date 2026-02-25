@@ -103,8 +103,8 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
               >
                 <span
                   style={{
-                    color: item.agent.riskScore < 33 ? "#33ff33" : 
-                           item.agent.riskScore < 66 ? "#ffcc33" : "#ff9933",
+                    color: item.agent.riskScore < 33 ? "#22d3ee" : 
+                           item.agent.riskScore < 66 ? "#f59e0b" : "#ef4444",
                   }}
                 >
                   {item.agent.riskScore.toFixed(1)}
@@ -120,7 +120,7 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
               </div>
               <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-yellow-500 to-orange-500"
+                  className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500"
                   initial={{ width: 0 }}
                   animate={{ width: `${(item.agent.riskScore / 100) * 100}%` }}
                   transition={{ duration: 1, ease: "easeOut", delay: 0.1 }}
@@ -156,11 +156,11 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
       {/* Common & Unique Findings */}
       <div className="grid grid-cols-3 gap-4">
         {/* Common */}
-        <motion.div variants={itemVariants} className="glass-effect p-4 rounded-lg border border-green-500/30">
+        <motion.div variants={itemVariants} className="glass-effect p-4 rounded-lg border border-cyan-500/30">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-sm text-green-400">Common</h4>
+            <h4 className="font-semibold text-sm text-cyan-400">Common</h4>
             <motion.div
-              className="bg-green-500/20 text-green-400 text-xs font-bold px-2 py-1 rounded"
+              className="bg-cyan-500/20 text-cyan-400 text-xs font-bold px-2 py-1 rounded"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
@@ -174,7 +174,7 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="text-green-400/70 line-clamp-2 flex gap-1"
+                className="text-cyan-400/70 line-clamp-2 flex gap-1"
               >
                 <span>✓</span>
                 <span>{finding}</span>
@@ -184,11 +184,11 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
         </motion.div>
 
         {/* Unique A */}
-        <motion.div variants={itemVariants} className="glass-effect p-4 rounded-lg border border-blue-500/30">
+        <motion.div variants={itemVariants} className="glass-effect p-4 rounded-lg border border-cyan-500/30">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-sm text-blue-400">Agent A Only</h4>
+            <h4 className="font-semibold text-sm text-cyan-400">Agent A Only</h4>
             <motion.div
-              className="bg-blue-500/20 text-blue-400 text-xs font-bold px-2 py-1 rounded"
+              className="bg-cyan-500/20 text-cyan-400 text-xs font-bold px-2 py-1 rounded"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
             >
@@ -202,7 +202,7 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="text-blue-400/70 line-clamp-2 flex gap-1"
+                className="text-cyan-400/70 line-clamp-2 flex gap-1"
               >
                 <span>→</span>
                 <span>{finding}</span>
@@ -212,11 +212,11 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
         </motion.div>
 
         {/* Unique B */}
-        <motion.div variants={itemVariants} className="glass-effect p-4 rounded-lg border border-purple-500/30">
+        <motion.div variants={itemVariants} className="glass-effect p-4 rounded-lg border border-indigo-500/30">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-sm text-purple-400">Agent B Only</h4>
+            <h4 className="font-semibold text-sm text-indigo-400">Agent B Only</h4>
             <motion.div
-              className="bg-purple-500/20 text-purple-400 text-xs font-bold px-2 py-1 rounded"
+              className="bg-indigo-500/20 text-indigo-400 text-xs font-bold px-2 py-1 rounded"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2.5, repeat: Infinity, delay: 1 }}
             >
@@ -230,7 +230,7 @@ export function CrossRunComparison({ agentA, agentB }: CrossRunComparisonProps) 
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="text-purple-400/70 line-clamp-2 flex gap-1"
+                className="text-indigo-400/70 line-clamp-2 flex gap-1"
               >
                 <span>→</span>
                 <span>{finding}</span>

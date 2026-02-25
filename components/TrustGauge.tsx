@@ -34,30 +34,30 @@ export function TrustGauge({ confidence, decision, riskLevel }: TrustGaugeProps)
   const getRiskColor = () => {
     switch (riskLevel) {
       case "critical":
-        return "#ff3333"
+        return "#ff3b3b"
       case "high":
-        return "#ff9933"
+        return "#ef4444"
       case "medium":
-        return "#ffcc33"
+        return "#f59e0b"
       case "low":
-        return "#33ff33"
+        return "#06b6d4"
       default:
-        return "#ac2fff"
+        return "#7c3aed"
     }
   }
 
   const getRiskGlowColor = () => {
     switch (riskLevel) {
       case "critical":
-        return "rgba(255, 51, 51, 0.4)"
+        return "rgba(255, 59, 59, 0.45)"
       case "high":
-        return "rgba(255, 153, 51, 0.4)"
+        return "rgba(239, 68, 68, 0.4)"
       case "medium":
-        return "rgba(255, 204, 51, 0.4)"
+        return "rgba(245, 158, 11, 0.4)"
       case "low":
-        return "rgba(51, 255, 51, 0.4)"
+        return "rgba(6, 182, 212, 0.4)"
       default:
-        return "rgba(172, 47, 255, 0.4)"
+        return "rgba(124, 58, 237, 0.4)"
     }
   }
 
@@ -195,7 +195,7 @@ export function TrustGauge({ confidence, decision, riskLevel }: TrustGaugeProps)
           <div
             className="w-full h-full rounded-full"
             style={{
-              background: `linear-gradient(to top, ${getRiskColor()}, rgba(172, 47, 255, 0.3))`,
+              background: `linear-gradient(to top, ${getRiskColor()}, rgba(124, 58, 237, 0.3))`,
             }}
           />
         </motion.div>

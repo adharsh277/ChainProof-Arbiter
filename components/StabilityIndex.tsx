@@ -16,7 +16,7 @@ export function StabilityIndex({ bundle }: StabilityIndexProps) {
   const riskDiff = Math.abs(bundle.agent_a_result.riskScore - bundle.agent_b_result.riskScore)
   const divergenceLevel = riskDiff < 10 ? "Low" : riskDiff < 25 ? "Medium" : "High"
   const divergenceColor = 
-    divergenceLevel === "Low" ? "text-green-400" : 
+    divergenceLevel === "Low" ? "text-cyan-400" : 
     divergenceLevel === "Medium" ? "text-yellow-400" : 
     "text-red-400"
 
@@ -26,13 +26,13 @@ export function StabilityIndex({ bundle }: StabilityIndexProps) {
   const runVariability = (confidenceDiff / avgConfidence) * 100
 
   const getStabilityColor = (score: number) => {
-    if (score >= 80) return "text-green-400"
+    if (score >= 80) return "text-cyan-400"
     if (score >= 60) return "text-yellow-400"
     return "text-red-400"
   }
 
   const getStabilityRing = (score: number) => {
-    if (score >= 80) return "ring-green-500/30"
+    if (score >= 80) return "ring-cyan-500/30"
     if (score >= 60) return "ring-yellow-500/30"
     return "ring-red-500/30"
   }
@@ -107,7 +107,7 @@ export function StabilityIndex({ bundle }: StabilityIndexProps) {
           className="p-4 rounded-lg bg-gradient-to-br from-white/5 to-white/0 border border-white/10"
         >
           <div className="flex items-center gap-2 mb-2">
-            <Activity className="w-4 h-4 text-blue-400" />
+            <Activity className="w-4 h-4 text-indigo-400" />
             <span className="text-xs text-muted-foreground uppercase tracking-wide">Run Variability</span>
           </div>
           <motion.div
@@ -116,7 +116,7 @@ export function StabilityIndex({ bundle }: StabilityIndexProps) {
             transition={{ type: "spring", stiffness: 200, delay: 0.6 }}
             className="flex items-baseline gap-2"
           >
-            <span className="text-3xl font-bold text-blue-400">
+            <span className="text-3xl font-bold text-indigo-400">
               {runVariability.toFixed(1)}
             </span>
             <span className="text-lg text-muted-foreground">%</span>
@@ -136,11 +136,11 @@ export function StabilityIndex({ bundle }: StabilityIndexProps) {
       >
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
             <span>Cross-run validated: {bundle.cross_run_consistency ? "Yes" : "No"}</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
             <span>Validator score: {bundle.validator_score.overallScore.toFixed(1)}/100</span>
           </div>
         </div>

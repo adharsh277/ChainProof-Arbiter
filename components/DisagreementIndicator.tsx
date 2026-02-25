@@ -41,7 +41,7 @@ export function DisagreementIndicator({
         exit={{ opacity: 0, y: -10 }}
         className={`rounded-lg border-2 p-4 glass-effect ${
           agreement
-            ? "border-green-500/50 bg-green-500/5"
+            ? "border-cyan-500/50 bg-cyan-500/5"
             : "border-yellow-500/50 bg-yellow-500/5"
         }`}
       >
@@ -53,7 +53,7 @@ export function DisagreementIndicator({
             className={!agreement ? "shake-micro" : ""}
           >
             {agreement ? (
-              <Check className="w-6 h-6 text-green-400" />
+              <Check className="w-6 h-6 text-cyan-400" />
             ) : (
               <AlertTriangle className="w-6 h-6 text-yellow-400" />
             )}
@@ -116,7 +116,7 @@ export function DisagreementIndicator({
               <motion.div
                 className={`h-full transition-all duration-1000 ${
                   agreement
-                    ? "bg-gradient-to-r from-green-500 to-emerald-500"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-500"
                     : "bg-gradient-to-r from-yellow-500 to-orange-500"
                 }`}
                 initial={{ width: 0 }}

@@ -10,7 +10,7 @@ interface AgentTimelineProps {
 
 export function AgentTimeline({ events }: AgentTimelineProps) {
   const getStatusIcon = (status: string) => {
-    if (status === "complete") return <Check className="w-5 h-5 text-green-400" />
+    if (status === "complete") return <Check className="w-5 h-5 text-cyan-400" />
     if (status === "error") return <AlertCircle className="w-5 h-5 text-red-400" />
     if (status === "warning") return <AlertCircle className="w-5 h-5 text-yellow-400" />
     if (status === "in-progress") return <Zap className="w-5 h-5 text-primary animate-pulse" />
@@ -37,9 +37,9 @@ export function AgentTimeline({ events }: AgentTimelineProps) {
       case "agreement":
         return "from-yellow-500 to-yellow-600"
       case "validation":
-        return "from-green-500 to-green-600"
+        return "from-cyan-500 to-cyan-600"
       case "complete":
-        return "from-emerald-500 to-emerald-600"
+        return "from-indigo-500 to-indigo-600"
       default:
         return "from-gray-500 to-gray-600"
     }

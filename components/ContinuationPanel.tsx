@@ -37,7 +37,7 @@ export function ContinuationPanel({ bundle }: ContinuationPanelProps) {
       case "alert":
         return "text-red-400 bg-red-500/10 border-red-500/30"
       case "complete":
-        return "text-green-400 bg-green-500/10 border-green-500/30"
+        return "text-cyan-400 bg-cyan-500/10 border-cyan-500/30"
       default:
         return "text-gray-400 bg-gray-500/10 border-gray-500/30"
     }
@@ -46,7 +46,7 @@ export function ContinuationPanel({ bundle }: ContinuationPanelProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "sent":
-        return <CheckCircle className="w-3 h-3 text-green-400" />
+        return <CheckCircle className="w-3 h-3 text-cyan-400" />
       case "pending":
         return <Clock className="w-3 h-3 text-yellow-400" />
       case "failed":
@@ -79,7 +79,7 @@ export function ContinuationPanel({ bundle }: ContinuationPanelProps) {
                   className={`text-xs px-2 py-0.5 rounded ${
                     continuation.should_continue
                       ? "bg-orange-500/20 text-orange-300"
-                      : "bg-green-500/20 text-green-300"
+                      : "bg-cyan-500/20 text-cyan-300"
                   }`}
                 >
                   {continuation.should_continue ? "Action Required" : "Completed"}

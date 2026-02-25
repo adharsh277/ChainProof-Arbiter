@@ -10,7 +10,7 @@ interface ConsensusTimelineProps {
 
 export function ConsensusTimeline({ events }: ConsensusTimelineProps) {
   const getStatusIcon = (status: string) => {
-    if (status === "complete") return <Check className="w-5 h-5 text-green-400" />
+    if (status === "complete") return <Check className="w-5 h-5 text-cyan-400" />
     if (status === "error") return <AlertCircle className="w-5 h-5 text-red-400" />
     if (status === "warning") return <AlertCircle className="w-5 h-5 text-yellow-400" />
     if (status === "in-progress") return <Zap className="w-5 h-5 text-primary animate-pulse" />
@@ -37,9 +37,9 @@ export function ConsensusTimeline({ events }: ConsensusTimelineProps) {
       case "agreement":
         return "from-yellow-500 to-yellow-600"
       case "validation":
-        return "from-green-500 to-green-600"
+        return "from-cyan-500 to-cyan-600"
       case "complete":
-        return "from-emerald-500 to-emerald-600"
+        return "from-indigo-500 to-indigo-600"
       default:
         return "from-gray-500 to-gray-600"
     }
@@ -49,7 +49,7 @@ export function ConsensusTimeline({ events }: ConsensusTimelineProps) {
     if (!status) return null
     
     const badges = {
-      agreement: { text: "In Agreement", color: "bg-green-500/20 text-green-400 border-green-500/30" },
+      agreement: { text: "In Agreement", color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" },
       diverged: { text: "Diverged", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
       escalated: { text: "Escalated", color: "bg-red-500/20 text-red-400 border-red-500/30" },
     }
@@ -80,7 +80,7 @@ export function ConsensusTimeline({ events }: ConsensusTimelineProps) {
     }
     
     return (
-      <span className={`flex items-center gap-1 text-xs ${isPositive ? 'text-red-400' : 'text-green-400'}`}>
+      <span className={`flex items-center gap-1 text-xs ${isPositive ? 'text-red-400' : 'text-cyan-400'}`}>
         {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
         <span>{isPositive ? '+' : ''}{delta.toFixed(1)}</span>
       </span>
@@ -113,9 +113,9 @@ export function ConsensusTimeline({ events }: ConsensusTimelineProps) {
                     scale: 1,
                     ...(isLatest ? {
                       boxShadow: [
-                        "0 0 0 0 rgba(172, 47, 255, 0.4)",
-                        "0 0 0 10px rgba(172, 47, 255, 0)",
-                        "0 0 0 0 rgba(172, 47, 255, 0)"
+                        "0 0 0 0 rgba(124, 58, 237, 0.4)",
+                        "0 0 0 10px rgba(124, 58, 237, 0)",
+                        "0 0 0 0 rgba(124, 58, 237, 0)"
                       ]
                     } : {})
                   }}
@@ -138,7 +138,7 @@ export function ConsensusTimeline({ events }: ConsensusTimelineProps) {
                 {index < events.length - 1 && (
                   <motion.div
                     className={`w-0.5 h-12 bg-gradient-to-b from-primary/50 to-transparent my-1 ${
-                      isLatest ? 'shadow-[0_0_10px_rgba(172,47,255,0.5)]' : ''
+                        isLatest ? 'shadow-[0_0_10px_rgba(124,58,237,0.5)]' : ''
                     }`}
                     initial={{ scaleY: 0 }}
                     animate={{ scaleY: 1 }}
@@ -157,9 +157,9 @@ export function ConsensusTimeline({ events }: ConsensusTimelineProps) {
                   opacity: 1,
                   ...(isLatest ? {
                     boxShadow: [
-                      "0 0 15px rgba(172, 47, 255, 0.1)",
-                      "0 0 20px rgba(172, 47, 255, 0.2)",
-                      "0 0 15px rgba(172, 47, 255, 0.1)"
+                      "0 0 15px rgba(124, 58, 237, 0.1)",
+                      "0 0 20px rgba(124, 58, 237, 0.2)",
+                      "0 0 15px rgba(124, 58, 237, 0.1)"
                     ]
                   } : {})
                 }}

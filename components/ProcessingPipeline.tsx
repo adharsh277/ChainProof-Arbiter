@@ -36,12 +36,12 @@ export function ProcessingPipeline({
     active: {
       scale: 1.1,
       opacity: 1,
-      boxShadow: "0 0 30px rgba(172, 47, 255, 0.6)",
+      boxShadow: "0 0 30px rgba(124, 58, 237, 0.6)",
     },
     completed: {
       scale: 1,
       opacity: 1,
-      boxShadow: "0 0 20px rgba(34, 197, 94, 0.4)",
+      boxShadow: "0 0 20px rgba(34, 211, 238, 0.4)",
     },
   }
 
@@ -72,7 +72,7 @@ export function ProcessingPipeline({
                 <motion.div
                   className={`relative w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
                     isCompleted
-                      ? "bg-green-500/20 border border-green-500/50 text-green-400"
+                      ? "bg-cyan-500/20 border border-cyan-500/50 text-cyan-400"
                       : isActive
                         ? "bg-primary/30 border border-primary text-primary"
                         : "bg-muted border border-muted text-muted-foreground"

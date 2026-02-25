@@ -130,16 +130,16 @@ export function ExplainabilityPanel({ bundle }: ExplainabilityPanelProps) {
                 transition={{ delay: 0.5 }}
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <Hash className="w-4 h-4 text-green-400" />
+                  <Hash className="w-4 h-4 text-cyan-400" />
                   <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">
                     Supporting Evidence Trail
                   </h4>
                 </div>
-                <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                <div className="p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Evidence Hash:</span>
-                      <code className="text-xs font-mono text-green-400">{evidenceHash}</code>
+                      <code className="text-xs font-mono text-cyan-400">{evidenceHash}</code>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Proof Type:</span>
@@ -151,7 +151,7 @@ export function ExplainabilityPanel({ bundle }: ExplainabilityPanelProps) {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Cross-Run Consistency:</span>
-                      <span className={`text-xs font-semibold ${bundle.cross_run_consistency ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className={`text-xs font-semibold ${bundle.cross_run_consistency ? 'text-cyan-400' : 'text-red-400'}`}>
                         {bundle.cross_run_consistency ? "Verified ✓" : "Failed ✗"}
                       </span>
                     </div>

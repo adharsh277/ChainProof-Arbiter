@@ -71,7 +71,7 @@ export function SessionTracker({ bundle }: SessionTrackerProps) {
                 title="Copy to clipboard"
               >
                 {copied === sessionId ? (
-                  <CheckCircle className="w-3 h-3 text-green-400" />
+                  <CheckCircle className="w-3 h-3 text-cyan-400" />
                 ) : (
                   <Copy className="w-3 h-3 text-muted-foreground" />
                 )}

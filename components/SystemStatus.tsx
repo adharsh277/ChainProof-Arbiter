@@ -32,7 +32,7 @@ export function SystemStatus({
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="fixed top-6 right-6 z-40"
+      className="fixed top-16 right-6 z-40"
     >
       <div className="glass-effect p-4 rounded-lg space-y-2">
         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
