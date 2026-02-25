@@ -5,6 +5,8 @@ import {
   assessAgreement,
   generateValidatorScore,
   generateArbitrationDecision,
+  evaluateContinuation,
+  generateOperationalActions,
 } from "@/lib/agents"
 import { ArbitrationBundle, AnalysisRequest } from "@/lib/types"
 
@@ -23,11 +25,17 @@ export async function POST(req: NextRequest) {
     const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     const timestamp = new Date().toISOString()
 
-    // Step 2: Delegate to two independent agents
+    // Step 2: Delegate to Cortensor → two independent agents execute via Router
     const [analysisA, analysisB] = await Promise.all([
       runRedundantInference("risk-analysis", body.query, body.type, 2),
       runRedundantInference("contract-behavior", body.query, body.type, 2),
     ])
+
+    // Collect all session IDs from Cortensor
+    const sessionIds = [
+      ...analysisA.map((a) => a.sessionId).filter(Boolean),
+      ...analysisB.map((a) => a.sessionId).filter(Boolean),
+    ] as string[]
 
     // Get the first analysis from each agent (representative)
     const agentAResult = analysisA[0]
@@ -37,12 +45,12 @@ export async function POST(req: NextRequest) {
     const threshold = 20
     const agreementBool = assessAgreement(agentAResult, agentBResult, threshold)
 
-    // Step 4: Run redundant inference & calculate consistency
+    // Step 4: Run redundant inference & calculate consistency (PoI)
     const consistencyScoreA = calculateConsistencyScore(analysisA)
     const consistencyScoreB = calculateConsistencyScore(analysisB)
     const crossRunConsistency = consistencyScoreA > 0.7 && consistencyScoreB > 0.7
 
-    // Step 5: Apply rubric-based scoring (PoUW)
+    // Step 5: Apply rubric-based scoring (PoUW) via Cortensor /validate
     const validatorResult = generateValidatorScore(
       agentAResult,
       agentBResult,
@@ -51,13 +59,29 @@ export async function POST(req: NextRequest) {
 
     // Step 6: Generate final decision
     const avgRisk = (agentAResult.riskScore + agentBResult.riskScore) / 2
+    const avgConfidence = (agentAResult.confidence + agentBResult.confidence) / 2
     const { decision } = generateArbitrationDecision(
       agreementBool,
       avgRisk,
       validatorResult.score
     )
 
-    // Step 7: Create structured arbitration bundle
+    // Step 7: Autonomous Continuation Logic
+    const continuation = evaluateContinuation(
+      agreementBool,
+      avgRisk,
+      validatorResult.score,
+      avgConfidence
+    )
+
+    // Step 8: Generate Operational Actions (webhooks, alerts, escalations)
+    const operationalActions = generateOperationalActions(
+      continuation,
+      taskId,
+      avgRisk
+    )
+
+    // Step 9: Create structured arbitration bundle with full evidence
     const arbitrationBundle: ArbitrationBundle = {
       task: body.query,
       taskId,
@@ -80,19 +104,27 @@ export async function POST(req: NextRequest) {
         justification: validatorResult.justification,
       },
       final_decision: decision,
-      confidence: (agentAResult.confidence + agentBResult.confidence) / 2,
+      confidence: avgConfidence,
       evidence: {
         cross_run_consistency: crossRunConsistency,
         rubric_used: "risk-assessment-v1",
         validator_runs: 2,
         agreement_threshold: threshold,
         actual_agreement: agreementBool ? 100 : 45,
+        session_ids: sessionIds, // All Cortensor session IDs
+        raw_outputs: [
+          agentAResult.analysis,
+          agentBResult.analysis,
+        ], // Raw model outputs
       },
       proof_metadata: {
         proof_type: "arbitration",
         proof_version: "1.0.0",
         proof_timestamp: timestamp,
+        // Optional: Add IPFS hash here if implementing IPFS storage
       },
+      continuation, // Autonomous continuation decision
+      operational_actions: operationalActions, // Triggered workflows
     }
 
     return NextResponse.json(arbitrationBundle, { status: 200 })
