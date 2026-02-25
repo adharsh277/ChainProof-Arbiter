@@ -72,4 +72,10 @@ export interface TimelineEvent {
   message: string
   type: "task" | "analysis" | "agreement" | "validation" | "complete"
   status: "pending" | "in-progress" | "complete" | "warning" | "error"
+  // Enhanced consensus intelligence fields
+  confidence?: number // Agent confidence percentage
+  riskScore?: number // Current risk score
+  delta?: number // Change from previous run
+  consensusStatus?: "agreement" | "diverged" | "escalated" // Multi-agent consensus state
+  latency?: number // Time taken in seconds
 }
