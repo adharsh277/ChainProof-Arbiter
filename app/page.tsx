@@ -15,8 +15,10 @@ import { CrossRunComparison } from "@/components/CrossRunComparison"
 import { StabilityIndex } from "@/components/StabilityIndex"
 import { DisagreementHeatmap } from "@/components/DisagreementHeatmap"
 import { ExplainabilityPanel } from "@/components/ExplainabilityPanel"
+import { ContinuationPanel } from "@/components/ContinuationPanel"
+import { SessionTracker } from "@/components/SessionTracker"
 import { ArbitrationBundle, TimelineEvent, AnalysisRequest } from "@/lib/types"
-import { Activity, Brain, Shield, Database, Zap } from "lucide-react"
+import { Activity, Brain, Shield, Database, Zap, GitBranch } from "lucide-react"
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
@@ -369,7 +371,7 @@ export default function Home() {
                   className="glass-effect p-6 rounded-lg"
                 >
                   <Tabs defaultValue="report" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                       <TabsTrigger value="report" className="gap-2">
                         <Brain className="w-4 h-4" />
                         Arbitration Report
@@ -381,6 +383,10 @@ export default function Home() {
                       <TabsTrigger value="evidence" className="gap-2">
                         <Database className="w-4 h-4" />
                         Evidence Explorer
+                      </TabsTrigger>
+                      <TabsTrigger value="operations" className="gap-2">
+                        <GitBranch className="w-4 h-4" />
+                        Operations
                       </TabsTrigger>
                     </TabsList>
 
@@ -396,7 +402,18 @@ export default function Home() {
                     </TabsContent>
 
                     <TabsContent value="evidence" className="mt-6">
-                      <EvidenceExplorer bundle={bundle} />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <EvidenceExplorer bundle={bundle} />
+                        </div>
+                        <div>
+                          <SessionTracker bundle={bundle} />
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="operations" className="mt-6">
+                      <ContinuationPanel bundle={bundle} />
                     </TabsContent>
                   </Tabs>
                 </motion.div>
