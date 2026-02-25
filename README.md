@@ -24,6 +24,18 @@ This is not a demo—it's a production-ready platform for institutional-grade bl
 
 ---
 
+## 📸 Screenshots
+
+### Main Dashboard
+![ChainProof Arbiter Dashboard](./screenshots/dashboard.png)
+*Multi-agent consensus timeline with real-time intelligence metrics and aurora backgrounds*
+
+### Intelligence Features
+![Intelligence Layer](./screenshots/intelligence-features.png)
+*Stability Index, Disagreement Heatmap, and Explainability Panel showcasing multi-agent reasoning depth*
+
+---
+
 ## ✨ Key Features
 
 ### 🧠 Intelligence Layer
