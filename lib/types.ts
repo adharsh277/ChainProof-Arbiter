@@ -8,6 +8,9 @@ export interface AgentAnalysis {
   riskScore: number
   confidence: number
   findings: string[]
+  sessionId?: string // Cortensor session ID
+  modelUsed?: string // Model identifier from Cortensor
+  latencyMs?: number // Inference latency in milliseconds
 }
 
 export interface AgentTask {
@@ -56,12 +59,48 @@ export interface ArbitrationBundle {
     validator_runs: number
     agreement_threshold: number
     actual_agreement: number
+    session_ids: string[] // All Cortensor session IDs
+    raw_outputs?: string[] // Raw model outputs for verification
   }
   proof_metadata: {
     proof_type: "arbitration"
     proof_version: string
     proof_timestamp: string
+    ipfs_hash?: string // Optional IPFS hash for evidence
   }
+  continuation?: ContinuationDecision // Autonomous follow-up actions
+  operational_actions?: OperationalAction[] // Triggered workflows
+}
+
+// Autonomous continuation types
+export interface ContinuationDecision {
+  should_continue: boolean
+  reason: string
+  action: "rerun" | "escalate" | "alert" | "complete"
+  triggered_by: "disagreement" | "low_confidence" | "high_risk" | "manual"
+  threshold_exceeded?: {
+    metric: string
+    value: number
+    threshold: number
+  }
+}
+
+export interface OperationalAction {
+  type: "webhook" | "alert" | "report" | "escalation"
+  triggered: boolean
+  endpoint?: string
+  payload?: Record<string, unknown>
+  timestamp: string
+  status: "pending" | "sent" | "failed"
+}
+
+// Safety guardrails types
+export interface SafetyConstraints {
+  refuses_financial_advice: boolean
+  refuses_auto_execution: boolean
+  requires_human_review_below_confidence: number
+  blocks_unsupported_chains: string[]
+  rate_limit_per_hour: number
 }
 
 // UI types
