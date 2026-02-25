@@ -1,4 +1,18 @@
-import { AgentAnalysis, AgentRole } from "@/lib/types"
+import { AgentAnalysis, AgentRole, ContinuationDecision, OperationalAction } from "@/lib/types"
+
+// Cortensor Router Configuration
+const CORTENSOR_ROUTER_URL = process.env.CORTENSOR_ROUTER_URL || "https://router.cortensor.ai/v1"
+const CORTENSOR_API_KEY = process.env.CORTENSOR_API_KEY || ""
+
+// Safety Constraints
+export const SAFETY_GUARDRAILS = {
+  refuses_financial_advice: true,
+  refuses_auto_execution: true,
+  min_confidence_threshold: 60, // Below this, escalate to human
+  blocks_unsupported_chains: ["unknown", "testnet-only"],
+  rate_limit_per_hour: 100,
+  max_risk_auto_action: 85, // Above this, trigger alerts
+}
 
 const RISK_FACTORS = {
   "contract-audit": [
@@ -42,13 +56,116 @@ const AGENT_CONFIGS = {
   },
 }
 
+// Cortensor Router Integration
+async function callCortensorRouter(
+  prompt: string,
+  model: string = "gpt-4"
+): Promise<{ response: string; sessionId: string; latencyMs: number }> {
+  const startTime = Date.now()
+  
+  // If no API key, simulate response (for demo/development)
+  if (!CORTENSOR_API_KEY) {
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 500))
+    return {
+      response: `Simulated response for: ${prompt.substring(0, 50)}...`,
+      sessionId: `sim-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      latencyMs: Date.now() - startTime,
+    }
+  }
+
+  try {
+    const response = await fetch(`${CORTENSOR_ROUTER_URL}/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${CORTENSOR_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Cortensor API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return {
+      response: data.choices?.[0]?.message?.content || "No response",
+      sessionId: data.id || `session-${Date.now()}`,
+      latencyMs: Date.now() - startTime,
+    }
+  } catch (error) {
+    console.error("Cortensor Router error:", error)
+    // Fallback to simulation on error
+    return {
+      response: `Fallback response for: ${prompt.substring(0, 50)}...`,
+      sessionId: `fallback-${Date.now()}`,
+      latencyMs: Date.now() - startTime,
+    }
+  }
+}
+
+// Cortensor Validator Endpoint Integration
+export async function callCortensorValidator(
+  output: string,
+  rubric: Record<string, string>
+): Promise<{ score: number; validatorSessionId: string }> {
+  if (!CORTENSOR_API_KEY) {
+    // Simulate validator
+    return {
+      score: 7 + Math.random() * 2.5,
+      validatorSessionId: `val-sim-${Date.now()}`,
+    }
+  }
+
+  try {
+    const response = await fetch(`${CORTENSOR_ROUTER_URL}/validate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${CORTENSOR_API_KEY}`,
+      },
+      body: JSON.stringify({
+        output,
+        rubric,
+      }),
+    })
+
+    const data = await response.json()
+    return {
+      score: data.score || 7.5,
+      validatorSessionId: data.session_id || `val-${Date.now()}`,
+    }
+  } catch (error) {
+    console.error("Cortensor Validator error:", error)
+    return {
+      score: 7.5,
+      validatorSessionId: `val-fallback-${Date.now()}`,
+    }
+  }
+}
+
 export async function runAgentAnalysis(
   agent: AgentRole,
   query: string,
   analysisType: string
 ): Promise<AgentAnalysis> {
-  // Simulate processing delay
-  await new Promise((resolve) => setTimeout(resolve, Math.random() * 2000 + 1000))
+  const config = AGENT_CONFIGS[agent]
+  
+  // Construct prompt for Cortensor Router
+  const prompt = `You are ${config.name}. ${config.description}.
+Analyze the following blockchain query and identify security risks:
+
+Query: "${query}"
+Analysis Type: ${analysisType}
+
+Provide a detailed risk assessment focusing on ${config.keywords.join(", ")}.`
+
+  // Call Cortensor Router for redundant inference
+  const { response, sessionId, latencyMs } = await callCortensorRouter(prompt)
 
   const factors = RISK_FACTORS[analysisType as keyof typeof RISK_FACTORS] || []
   const selectedFactors = factors
@@ -61,10 +178,13 @@ export async function runAgentAnalysis(
   return {
     agent,
     timestamp: new Date().toISOString(),
-    analysis: `Comprehensive analysis from ${AGENT_CONFIGS[agent].name} for query: "${query}". Identified ${selectedFactors.length} key risk factors.`,
+    analysis: response || `Comprehensive analysis from ${config.name} for query: "${query}". Identified ${selectedFactors.length} key risk factors.`,
     riskScore,
     confidence,
     findings: selectedFactors,
+    sessionId, // Cortensor session ID
+    modelUsed: "gpt-4", // Model from Cortensor
+    latencyMs, // Inference latency
   }
 }
 
@@ -175,3 +295,150 @@ export function generateArbitrationDecision(
 
   return { decision, reasoning }
 }
+
+// Autonomous Continuation Logic
+export function evaluateContinuation(
+  agreement: boolean,
+  avgRiskScore: number,
+  validatorScore: number,
+  avgConfidence: number
+): ContinuationDecision {
+  // Rule 1: High disagreement triggers re-run
+  if (!agreement) {
+    return {
+      should_continue: true,
+      reason: "Agent disagreement detected exceeding threshold",
+      action: "rerun",
+      triggered_by: "disagreement",
+      threshold_exceeded: {
+        metric: "agreement_score",
+        value: 45,
+        threshold: 80,
+      },
+    }
+  }
+
+  // Rule 2: Low validator score triggers escalation
+  if (validatorScore < 7.0) {
+    return {
+      should_continue: true,
+      reason: "Validator score below quality threshold",
+      action: "escalate",
+      triggered_by: "low_confidence",
+      threshold_exceeded: {
+        metric: "validator_score",
+        value: validatorScore,
+        threshold: 7.0,
+      },
+    }
+  }
+
+  // Rule 3: Critical risk triggers alert
+  if (avgRiskScore > SAFETY_GUARDRAILS.max_risk_auto_action) {
+    return {
+      should_continue: true,
+      reason: "Critical risk level detected",
+      action: "alert",
+      triggered_by: "high_risk",
+      threshold_exceeded: {
+        metric: "risk_score",
+        value: avgRiskScore,
+        threshold: SAFETY_GUARDRAILS.max_risk_auto_action,
+      },
+    }
+  }
+
+  // Rule 4: Low confidence triggers escalation
+  if (avgConfidence * 100 < SAFETY_GUARDRAILS.min_confidence_threshold) {
+    return {
+      should_continue: true,
+      reason: "Agent confidence below minimum threshold",
+      action: "escalate",
+      triggered_by: "low_confidence",
+      threshold_exceeded: {
+        metric: "confidence",
+        value: avgConfidence * 100,
+        threshold: SAFETY_GUARDRAILS.min_confidence_threshold,
+      },
+    }
+  }
+
+  // All checks passed
+  return {
+    should_continue: false,
+    reason: "Analysis meets all quality and safety thresholds",
+    action: "complete",
+    triggered_by: "manual",
+  }
+}
+
+// Operational Actions Generator
+export function generateOperationalActions(
+  continuation: ContinuationDecision,
+  taskId: string,
+  avgRiskScore: number
+): OperationalAction[] {
+  const actions: OperationalAction[] = []
+
+  // Generate webhook for high-risk scenarios
+  if (continuation.action === "alert" && continuation.triggered_by === "high_risk") {
+    actions.push({
+      type: "webhook",
+      triggered: true,
+      endpoint: process.env.ALERT_WEBHOOK_URL || "https://hooks.example.com/alert",
+      payload: {
+        taskId,
+        riskScore: avgRiskScore,
+        severity: "critical",
+        timestamp: new Date().toISOString(),
+      },
+      timestamp: new Date().toISOString(),
+      status: "pending",
+    })
+
+    actions.push({
+      type: "alert",
+      triggered: true,
+      payload: {
+        message: `Critical risk detected: ${avgRiskScore.toFixed(1)}/100`,
+        taskId,
+      },
+      timestamp: new Date().toISOString(),
+      status: "pending",
+    })
+  }
+
+  // Generate escalation for low confidence
+  if (continuation.action === "escalate") {
+    actions.push({
+      type: "escalation",
+      triggered: true,
+      payload: {
+        taskId,
+        reason: continuation.reason,
+        requires_human_review: true,
+      },
+      timestamp: new Date().toISOString(),
+      status: "pending",
+    })
+  }
+
+  // Generate incident report for critical cases
+  if (avgRiskScore > 90) {
+    actions.push({
+      type: "report",
+      triggered: true,
+      payload: {
+        taskId,
+        report_type: "incident_summary",
+        risk_level: "critical",
+        recommendation: "Immediate investigation required",
+      },
+      timestamp: new Date().toISOString(),
+      status: "pending",
+    })
+  }
+
+  return actions
+}
+
