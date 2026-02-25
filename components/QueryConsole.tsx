@@ -45,7 +45,7 @@ export function QueryConsole({ onSubmit, isLoading }: QueryConsoleProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-4"
+      className="h-full flex flex-col space-y-4"
     >
       <div className="space-y-3">
         <div className="flex items-center gap-2 mb-4">
@@ -109,10 +109,10 @@ export function QueryConsole({ onSubmit, isLoading }: QueryConsoleProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="space-y-2"
+        className="flex-1 flex flex-col space-y-2"
       >
         <p className="text-xs font-semibold text-muted-foreground uppercase">Quick Examples</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 flex-1 content-start">
           {Object.entries(examples).map(([key, example]) => (
             <motion.button
               key={key}

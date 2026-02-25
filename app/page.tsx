@@ -1,16 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { QueryConsole } from "@/components/QueryConsole"
+import { CompactQueryBar } from "@/components/CompactQueryBar"
 import { ConsensusTimeline } from "@/components/ConsensusTimeline"
 import { TrustGauge } from "@/components/TrustGauge"
 import { DisagreementIndicator } from "@/components/DisagreementIndicator"
 import { ArbitrationReport } from "@/components/ArbitrationReport"
 import { EvidenceExplorer } from "@/components/EvidenceExplorer"
 import { SystemStatus } from "@/components/SystemStatus"
-import { ProcessingPipeline } from "@/components/ProcessingPipeline"
 import { CrossRunComparison } from "@/components/CrossRunComparison"
 import { StabilityIndex } from "@/components/StabilityIndex"
 import { DisagreementHeatmap } from "@/components/DisagreementHeatmap"
@@ -18,13 +18,26 @@ import { ExplainabilityPanel } from "@/components/ExplainabilityPanel"
 import { ContinuationPanel } from "@/components/ContinuationPanel"
 import { SessionTracker } from "@/components/SessionTracker"
 import { ArbitrationBundle, TimelineEvent, AnalysisRequest } from "@/lib/types"
-import { Activity, Brain, Shield, Database, Zap, GitBranch } from "lucide-react"
+import { Activity, Brain, Shield, Database, Zap, GitBranch, ChevronLeft } from "lucide-react"
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [bundle, setBundle] = useState<ArbitrationBundle | null>(null)
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [error, setError] = useState<string | null>(null)
+
+  const handleBackToConsole = () => {
+    setBundle(null)
+    setEvents([])
+    setError(null)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const handleNewAnalysis = () => {
+    setBundle(null)
+    setEvents([])
+    setError(null)
+  }
 
   const addEvent = (
     message: string,
@@ -223,251 +236,304 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl opacity-20 animate-pulse" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto p-6 space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-3 mb-8"
-        >
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold gradient-text">ChainProof Arbiter</h1>
-          </div>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Multi-Agent Blockchain Intelligence System • Institutional AI Arbitration Engine
-          </p>
-        </motion.div>
-
-        {/* Main Layout */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-        >
-          {/* Left Column - Query & Timeline */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Query Console */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="glass-effect p-6 rounded-lg"
-            >
-              <QueryConsole onSubmit={handleAnalyze} isLoading={isLoading} />
-            </motion.div>
-
-            {/* Timeline / Processing Pipeline */}
-            {isLoading ? (
+      {/* Main Container */}
+      <AnimatePresence mode="wait">
+        {!bundle ? (
+          // STATE 1: CONSOLE MODE (Before Analysis)
+          <motion.div
+            key="console-mode"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10 min-h-screen"
+          >
+            <div className="max-w-7xl mx-auto p-6 space-y-6">
+              {/* Header */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="glass-effect p-6 rounded-lg"
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <Activity className="w-5 h-5 text-secondary" />
-                  <h2 className="font-semibold">Multi-Agent Processing Pipeline</h2>
-                </div>
-                <ProcessingPipeline currentStep={Math.floor(events.length / 2) % 6} />
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="glass-effect p-6 rounded-lg"
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <Activity className="w-5 h-5 text-secondary" />
-                <h2 className="font-semibold">Multi-Agent Consensus Timeline</h2>
-                </div>
-                {events.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    Run an analysis to see the agent workflow in action
-                  </p>
-                ) : (
-                  <>
-                    <ConsensusTimeline events={events} />
-                    {bundle && (
-                      <div className="mt-6">
-                        <StabilityIndex bundle={bundle} />
-                      </div>
-                    )}
-                  </>
-                )}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Right Column - Results */}
-          <div className="lg:col-span-2 space-y-6">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-effect border border-red-500/30 p-4 rounded-lg text-sm text-red-400"
+                className="text-center space-y-3 mb-8"
               >
-                {error}
-              </motion.div>
-            )}
-
-            {bundle ? (
-              <>
-                {/* System Status */}
-                <SystemStatus
-                  routerStatus="online"
-                  validatorStatus="active"
-                  redundancyEnabled={true}
-                />
-
-                {/* Trust Gauge & Disagreement Indicator */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                    className="glass-effect p-6 rounded-lg"
-                  >
-                    <TrustGauge
-                      confidence={bundle.confidence}
-                      decision={bundle.final_decision}
-                      riskLevel={
-                        bundle.final_decision === "Low Risk"
-                          ? "low"
-                          : bundle.final_decision === "Medium Risk"
-                            ? "medium"
-                            : bundle.final_decision === "High Risk"
-                              ? "high"
-                              : "critical"
-                      }
-                    />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="glass-effect p-6 rounded-lg flex flex-col justify-center"
-                  >
-                    <DisagreementIndicator
-                      agreement={bundle.disagreement_analysis.agreement}
-                      agreementScore={bundle.disagreement_analysis.agreementScore}
-                      disagreementReason={
-                        bundle.disagreement_analysis.disagreementReason
-                      }
-                    />
-                  </motion.div>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-white" />
+                  </div>
+                  <h1 className="text-4xl font-bold gradient-text">ChainProof Arbiter</h1>
                 </div>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                  Multi-Agent Blockchain Intelligence System • Institutional AI Arbitration Engine
+                </p>
+              </motion.div>
 
-                {/* Tabbed Results */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="glass-effect p-6 rounded-lg"
-                >
-                  <Tabs defaultValue="report" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="report" className="gap-2">
-                        <Brain className="w-4 h-4" />
-                        Arbitration Report
-                      </TabsTrigger>
-                      <TabsTrigger value="cross-run" className="gap-2">
-                        <Zap className="w-4 h-4" />
-                        Cross-Run Analysis
-                      </TabsTrigger>
-                      <TabsTrigger value="evidence" className="gap-2">
-                        <Database className="w-4 h-4" />
-                        Evidence Explorer
-                      </TabsTrigger>
-                      <TabsTrigger value="operations" className="gap-2">
-                        <GitBranch className="w-4 h-4" />
-                        Operations
-                      </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="report" className="mt-6">
-                      <ArbitrationReport bundle={bundle} />
-                    </TabsContent>
-
-                    <TabsContent value="cross-run" className="mt-6">
-                      <CrossRunComparison
-                        agentA={bundle.agent_a_result}
-                        agentB={bundle.agent_b_result}
-                      />
-                    </TabsContent>
-
-                    <TabsContent value="evidence" className="mt-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <EvidenceExplorer bundle={bundle} />
-                        </div>
-                        <div>
-                          <SessionTracker bundle={bundle} />
-                        </div>
-                      </div>
-                    </TabsContent>
-
-                    <TabsContent value="operations" className="mt-6">
-                      <ContinuationPanel bundle={bundle} />
-                    </TabsContent>
-                  </Tabs>
-                </motion.div>
-
-                {/* Disagreement Heatmap */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <DisagreementHeatmap bundle={bundle} />
-                </motion.div>
-
-                {/* Explainability Panel */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 }}
-                >
-                  <ExplainabilityPanel bundle={bundle} />
-                </motion.div>
-              </>
-            ) : (
+              {/* Two-Column Layout */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="glass-effect p-12 rounded-lg text-center space-y-4"
+                transition={{ delay: 0.2 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch"
               >
-                <Brain className="w-12 h-12 text-primary/50 mx-auto" />
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Ready to Analyze</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Enter a query in the console to trigger the multi-agent arbitration workflow
-                  </p>
+                {/* Left Column - Query Console */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="glass-effect p-6 rounded-lg h-full flex flex-col"
+                >
+                  <QueryConsole onSubmit={handleAnalyze} isLoading={isLoading} />
+                </motion.div>
+
+                {/* Right Column - Ready to Analyze */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="glass-effect p-12 rounded-lg h-full flex flex-col items-center justify-center space-y-6 relative overflow-hidden"
+                >
+                  {/* Subtle gradient background accent */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+                  
+                  {/* Icon with pulse glow */}
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+                    <Brain className="w-20 h-20 text-primary relative z-10" />
+                  </div>
+                  
+                  <div className="space-y-3 relative z-10">
+                    <h3 className="font-semibold text-3xl text-center gradient-text">Ready to Analyze</h3>
+                    <p className="text-muted-foreground text-sm text-center max-w-md mx-auto leading-relaxed">
+                      Enter a query in the console to trigger the multi-agent arbitration workflow
+                    </p>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Footer Info */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="text-center text-xs text-muted-foreground mt-12"
+              >
+                <p>
+                  Powered by Multi-Agent Coordination • Cortensor Inference • Proof of Insight (PoI) •
+                  Proof of Unbiased Work (PoUW)
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
+        ) : (
+          // STATE 2: ANALYSIS MODE (After Analysis Started)
+          <motion.div
+            key="analysis-mode"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="relative z-10"
+          >
+            {/* Navigation Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="sticky top-10 z-40 bg-gradient-to-b from-background via-background/95 to-transparent pt-4 pb-3"
+            >
+              <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-4">
+                {/* Back Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleBackToConsole}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all duration-200 text-sm font-medium text-foreground group shrink-0"
+                >
+                  <ChevronLeft className="w-4 h-4 group-hover:translate-x-[-2px] transition-transform" />
+                  <span className="hidden sm:inline">Back to Console</span>
+                  <span className="sm:hidden">Back</span>
+                </motion.button>
+
+                {/* Center - System Status Strip */}
+                <div className="flex-1 flex justify-center">
+                  <SystemStatus
+                    routerStatus="online"
+                    validatorStatus="active"
+                    redundancyEnabled={true}
+                    compact={true}
+                  />
+                </div>
+
+                {/* New Analysis Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleNewAnalysis}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary to-accent text-white font-medium text-sm hover:shadow-lg hover:shadow-primary/50 transition-all duration-200 shrink-0"
+                >
+                  <span className="hidden sm:inline">New Analysis</span>
+                  <span className="sm:hidden">New</span>
+                </motion.button>
+              </div>
+            </motion.div>
+
+            {/* Compact Query Bar */}
+            <CompactQueryBar onSubmit={handleAnalyze} isLoading={isLoading} />
+
+            <div className="max-w-7xl mx-auto p-6 space-y-6">
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass-effect border border-red-500/30 p-4 rounded-lg text-sm text-red-400"
+                >
+                  {error}
+                </motion.div>
+              )}
+
+              {/* Trust Gauge & Disagreement Indicator - Side by Side */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                <div className="glass-effect p-6 rounded-lg">
+                  <TrustGauge
+                    confidence={bundle.confidence}
+                    decision={bundle.final_decision}
+                    riskLevel={
+                      bundle.final_decision === "Low Risk"
+                        ? "low"
+                        : bundle.final_decision === "Medium Risk"
+                          ? "medium"
+                          : bundle.final_decision === "High Risk"
+                            ? "high"
+                            : "critical"
+                    }
+                  />
+                </div>
+
+                <div className="glass-effect p-6 rounded-lg flex flex-col justify-center">
+                  <DisagreementIndicator
+                    agreement={bundle.disagreement_analysis.agreement}
+                    agreementScore={bundle.disagreement_analysis.agreementScore}
+                    disagreementReason={
+                      bundle.disagreement_analysis.disagreementReason
+                    }
+                  />
                 </div>
               </motion.div>
-            )}
-          </div>
-        </motion.div>
 
-        {/* Footer Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-center text-xs text-muted-foreground mt-12"
-        >
-          <p>
-            Powered by Multi-Agent Coordination • Cortensor Inference • Proof of Insight (PoI) •
-            Proof of Unbiased Work (PoUW)
-          </p>
-        </motion.div>
-      </div>
+              {/* Consensus Timeline */}
+              {events.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="glass-effect p-6 rounded-lg"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <Activity className="w-5 h-5 text-secondary" />
+                    <h2 className="font-semibold">Multi-Agent Consensus Timeline</h2>
+                  </div>
+                  <ConsensusTimeline events={events} />
+                  {bundle && (
+                    <div className="mt-6">
+                      <StabilityIndex bundle={bundle} />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Tabbed Results - Full Width */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="glass-effect p-6 rounded-lg"
+              >
+                <Tabs defaultValue="report" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="report" className="gap-2">
+                      <Brain className="w-4 h-4" />
+                      Arbitration Report
+                    </TabsTrigger>
+                    <TabsTrigger value="cross-run" className="gap-2">
+                      <Zap className="w-4 h-4" />
+                      Cross-Run Analysis
+                    </TabsTrigger>
+                    <TabsTrigger value="evidence" className="gap-2">
+                      <Database className="w-4 h-4" />
+                      Evidence Explorer
+                    </TabsTrigger>
+                    <TabsTrigger value="operations" className="gap-2">
+                      <GitBranch className="w-4 h-4" />
+                      Operations
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="report" className="mt-6">
+                    <ArbitrationReport bundle={bundle} />
+                  </TabsContent>
+
+                  <TabsContent value="cross-run" className="mt-6">
+                    <CrossRunComparison
+                      agentA={bundle.agent_a_result}
+                      agentB={bundle.agent_b_result}
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="evidence" className="mt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <EvidenceExplorer bundle={bundle} />
+                      </div>
+                      <div>
+                        <SessionTracker bundle={bundle} />
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="operations" className="mt-6">
+                    <ContinuationPanel bundle={bundle} />
+                  </TabsContent>
+                </Tabs>
+              </motion.div>
+
+              {/* Disagreement Heatmap */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <DisagreementHeatmap bundle={bundle} />
+              </motion.div>
+
+              {/* Explainability Panel */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <ExplainabilityPanel bundle={bundle} />
+              </motion.div>
+
+              {/* Footer */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-center text-xs text-muted-foreground mt-12"
+              >
+                <p>
+                  Powered by Multi-Agent Coordination • Cortensor Inference • Proof of Insight (PoI) •
+                  Proof of Unbiased Work (PoUW)
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
