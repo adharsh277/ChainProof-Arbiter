@@ -17,6 +17,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="antialiased">
+        {/* Aurora Background Elements */}
+        <div className="aurora-bg-primary top-0 right-0" style={{ right: '-100px', top: '-100px' }} />
+        <div className="aurora-bg-secondary bottom-0 left-0" style={{ left: '-150px', bottom: '-150px' }} />
+        <div className="aurora-bg-accent top-1/2 left-1/2" style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }} />
+        
+        {/* Main Content */}
         {children}
       </body>
     </html>
