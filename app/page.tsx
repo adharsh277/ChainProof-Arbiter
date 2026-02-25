@@ -4,13 +4,19 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { QueryConsole } from "@/components/QueryConsole"
-import { AgentTimeline } from "@/components/AgentTimeline"
+import { ConsensusTimeline } from "@/components/ConsensusTimeline"
 import { TrustGauge } from "@/components/TrustGauge"
 import { DisagreementIndicator } from "@/components/DisagreementIndicator"
 import { ArbitrationReport } from "@/components/ArbitrationReport"
 import { EvidenceExplorer } from "@/components/EvidenceExplorer"
+import { SystemStatus } from "@/components/SystemStatus"
+import { ProcessingPipeline } from "@/components/ProcessingPipeline"
+import { CrossRunComparison } from "@/components/CrossRunComparison"
+import { StabilityIndex } from "@/components/StabilityIndex"
+import { DisagreementHeatmap } from "@/components/DisagreementHeatmap"
+import { ExplainabilityPanel } from "@/components/ExplainabilityPanel"
 import { ArbitrationBundle, TimelineEvent, AnalysisRequest } from "@/lib/types"
-import { Activity, Brain, Shield, Database } from "lucide-react"
+import { Activity, Brain, Shield, Database, Zap } from "lucide-react"
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
@@ -22,7 +28,12 @@ export default function Home() {
     message: string,
     type: TimelineEvent["type"],
     status: TimelineEvent["status"],
-    agent?: string
+    agent?: string,
+    confidence?: number,
+    riskScore?: number,
+    delta?: number,
+    consensusStatus?: "agreement" | "diverged" | "escalated",
+    latency?: number
   ) => {
     const event: TimelineEvent = {
       id: `event-${Date.now()}`,
@@ -31,6 +42,11 @@ export default function Home() {
       type,
       status,
       agent: agent as any,
+      confidence,
+      riskScore,
+      delta,
+      consensusStatus,
+      latency,
     }
     setEvents((prev) => [event, ...prev])
   }
@@ -77,13 +93,23 @@ export default function Home() {
         "Running redundant inference (Run 1) via Cortensor",
         "analysis",
         "complete",
-        "risk-analysis"
+        "risk-analysis",
+        82,
+        undefined,
+        undefined,
+        undefined,
+        1.2
       )
       addEvent(
         "Running redundant inference (Run 2) via Cortensor",
         "analysis",
         "complete",
-        "contract-behavior"
+        "contract-behavior",
+        79,
+        undefined,
+        undefined,
+        undefined,
+        1.4
       )
 
       await new Promise((r) => setTimeout(r, 1500))
@@ -112,12 +138,26 @@ export default function Home() {
 
       // Stage 6: Agreement analysis
       if (data.disagreement_analysis.agreement) {
-        addEvent("✓ Agents in agreement - high confidence analysis", "agreement", "complete")
+        addEvent(
+          "✓ Agents in agreement - high confidence analysis",
+          "agreement",
+          "complete",
+          undefined,
+          data.disagreement_analysis.agreementScore,
+          data.agent_a_result.riskScore,
+          0,
+          "agreement"
+        )
       } else {
         addEvent(
           `⚠ Disagreement detected: ${data.disagreement_analysis.disagreementReason}`,
           "agreement",
-          "warning"
+          "warning",
+          undefined,
+          data.disagreement_analysis.agreementScore,
+          data.agent_a_result.riskScore,
+          Math.abs(data.agent_a_result.riskScore - data.agent_b_result.riskScore),
+          "diverged"
         )
       }
 
@@ -127,15 +167,27 @@ export default function Home() {
       addEvent(
         `Applying rubric-based scoring (${data.validator_score.rubricUsed})`,
         "validation",
-        "in-progress"
+        "in-progress",
+        undefined,
+        data.validator_score.overallScore,
+        data.agent_a_result.riskScore,
+        undefined,
+        "agreement",
+        0.8
       )
 
       await new Promise((r) => setTimeout(r, 1200))
 
       addEvent(
-        `Validator score: ${data.validator_score.overallScore.toFixed(1)}/10 - ${data.validator_score.justification}`,
+        `Validator score: ${data.validator_score.overallScore.toFixed(1)}/100 - ${data.validator_score.justification}`,
         "validation",
-        "complete"
+        "complete",
+        undefined,
+        data.confidence,
+        data.agent_a_result.riskScore,
+        undefined,
+        "agreement",
+        1.5
       )
 
       await new Promise((r) => setTimeout(r, 800))
@@ -162,7 +214,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-20 animate-pulse" />
@@ -206,25 +258,47 @@ export default function Home() {
               <QueryConsole onSubmit={handleAnalyze} isLoading={isLoading} />
             </motion.div>
 
-            {/* Timeline */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="glass-effect p-6 rounded-lg"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Activity className="w-5 h-5 text-secondary" />
-                <h2 className="font-semibold">Agent Activity Timeline</h2>
-              </div>
-              {events.length === 0 && !isLoading ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Run an analysis to see the agent workflow in action
-                </p>
-              ) : (
-                <AgentTimeline events={events} />
-              )}
-            </motion.div>
+            {/* Timeline / Processing Pipeline */}
+            {isLoading ? (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="glass-effect p-6 rounded-lg"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Activity className="w-5 h-5 text-secondary" />
+                  <h2 className="font-semibold">Multi-Agent Processing Pipeline</h2>
+                </div>
+                <ProcessingPipeline currentStep={Math.floor(events.length / 2) % 6} />
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="glass-effect p-6 rounded-lg"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Activity className="w-5 h-5 text-secondary" />
+                <h2 className="font-semibold">Multi-Agent Consensus Timeline</h2>
+                </div>
+                {events.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Run an analysis to see the agent workflow in action
+                  </p>
+                ) : (
+                  <>
+                    <ConsensusTimeline events={events} />
+                    {bundle && (
+                      <div className="mt-6">
+                        <StabilityIndex bundle={bundle} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </motion.div>
+            )}
           </div>
 
           {/* Right Column - Results */}
@@ -241,6 +315,13 @@ export default function Home() {
 
             {bundle ? (
               <>
+                {/* System Status */}
+                <SystemStatus
+                  routerStatus="online"
+                  validatorStatus="active"
+                  redundancyEnabled={true}
+                />
+
                 {/* Trust Gauge & Disagreement Indicator */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <motion.div
@@ -288,10 +369,14 @@ export default function Home() {
                   className="glass-effect p-6 rounded-lg"
                 >
                   <Tabs defaultValue="report" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="report" className="gap-2">
                         <Brain className="w-4 h-4" />
                         Arbitration Report
+                      </TabsTrigger>
+                      <TabsTrigger value="cross-run" className="gap-2">
+                        <Zap className="w-4 h-4" />
+                        Cross-Run Analysis
                       </TabsTrigger>
                       <TabsTrigger value="evidence" className="gap-2">
                         <Database className="w-4 h-4" />
@@ -303,10 +388,35 @@ export default function Home() {
                       <ArbitrationReport bundle={bundle} />
                     </TabsContent>
 
+                    <TabsContent value="cross-run" className="mt-6">
+                      <CrossRunComparison
+                        agentA={bundle.agent_a_result}
+                        agentB={bundle.agent_b_result}
+                      />
+                    </TabsContent>
+
                     <TabsContent value="evidence" className="mt-6">
                       <EvidenceExplorer bundle={bundle} />
                     </TabsContent>
                   </Tabs>
+                </motion.div>
+
+                {/* Disagreement Heatmap */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <DisagreementHeatmap bundle={bundle} />
+                </motion.div>
+
+                {/* Explainability Panel */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                >
+                  <ExplainabilityPanel bundle={bundle} />
                 </motion.div>
               </>
             ) : (
