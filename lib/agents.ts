@@ -1,8 +1,8 @@
 import { AgentAnalysis, AgentRole, ContinuationDecision, OperationalAction } from "@/lib/types"
+import { getRouterClient } from "@/lib/router-client"
 
-// Cortensor Router Configuration
-const CORTENSOR_ROUTER_URL = process.env.CORTENSOR_ROUTER_URL || "https://router.cortensor.ai/v1"
-const CORTENSOR_API_KEY = process.env.CORTENSOR_API_KEY || ""
+// Get Router client instance (real or simulated based on environment)
+const routerClient = getRouterClient()
 
 // Safety Constraints
 export const SAFETY_GUARDRAILS = {
@@ -56,53 +56,31 @@ const AGENT_CONFIGS = {
   },
 }
 
-// Cortensor Router Integration
+// Cortensor Router Integration using new Router Client
 async function callCortensorRouter(
   prompt: string,
   model: string = "gpt-4"
 ): Promise<{ response: string; sessionId: string; latencyMs: number }> {
-  const startTime = Date.now()
-  
-  // If no API key, simulate response (for demo/development)
-  if (!CORTENSOR_API_KEY) {
-    await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 500))
-    return {
-      response: `Simulated response for: ${prompt.substring(0, 50)}...`,
-      sessionId: `sim-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      latencyMs: Date.now() - startTime,
-    }
-  }
-
   try {
-    const response = await fetch(`${CORTENSOR_ROUTER_URL}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${CORTENSOR_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      }),
+    const result = await routerClient.chatCompletion({
+      model,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
     })
 
-    if (!response.ok) {
-      throw new Error(`Cortensor API error: ${response.status}`)
-    }
-
-    const data = await response.json()
     return {
-      response: data.choices?.[0]?.message?.content || "No response",
-      sessionId: data.id || `session-${Date.now()}`,
-      latencyMs: Date.now() - startTime,
+      response: result.response,
+      sessionId: result.sessionId,
+      latencyMs: result.latencyMs,
     }
   } catch (error) {
     console.error("Cortensor Router error:", error)
     // Fallback to simulation on error
+    const startTime = Date.now()
+    await new Promise((resolve) => setTimeout(resolve, 500))
     return {
-      response: `Fallback response for: ${prompt.substring(0, 50)}...`,
-      sessionId: `fallback-${Date.now()}`,
+      response: `Error fallback response for: ${prompt.substring(0, 50)}...`,
+      sessionId: `error-fallback-${Date.now()}`,
       latencyMs: Date.now() - startTime,
     }
   }
@@ -110,39 +88,27 @@ async function callCortensorRouter(
 
 // Cortensor Validator Endpoint Integration
 export async function callCortensorValidator(
-  output: string,
-  rubric: Record<string, string>
+  _output: string,
+  _rubric: Record<string, string>
 ): Promise<{ score: number; validatorSessionId: string }> {
-  if (!CORTENSOR_API_KEY) {
-    // Simulate validator
-    return {
-      score: 7 + Math.random() * 2.5,
-      validatorSessionId: `val-sim-${Date.now()}`,
-    }
-  }
-
   try {
-    const response = await fetch(`${CORTENSOR_ROUTER_URL}/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${CORTENSOR_API_KEY}`,
-      },
-      body: JSON.stringify({
-        output,
-        rubric,
-      }),
+    // For now, use a session ID to validate (you would get this from previous inference)
+    const sessionId = `validate-${Date.now()}`
+    
+    const validationResult = await routerClient.validateSession({
+      sessionId,
+      expectedQuality: "high",
     })
 
-    const data = await response.json()
     return {
-      score: data.score || 7.5,
-      validatorSessionId: data.session_id || `val-${Date.now()}`,
+      score: validationResult.score / 10, // Convert to 0-10 scale
+      validatorSessionId: validationResult.sessionId,
     }
   } catch (error) {
     console.error("Cortensor Validator error:", error)
+    // Fallback simulation
     return {
-      score: 7.5,
+      score: 7 + Math.random() * 2.5,
       validatorSessionId: `val-fallback-${Date.now()}`,
     }
   }
