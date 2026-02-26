@@ -17,6 +17,7 @@ import { DisagreementHeatmap } from "@/components/DisagreementHeatmap"
 import { ExplainabilityPanel } from "@/components/ExplainabilityPanel"
 import { ContinuationPanel } from "@/components/ContinuationPanel"
 import { SessionTracker } from "@/components/SessionTracker"
+import { RouterStatus } from "@/components/RouterStatus"
 import { ArbitrationBundle, TimelineEvent, AnalysisRequest } from "@/lib/types"
 import { Activity, Brain, Shield, Database, Zap, GitBranch, ChevronLeft } from "lucide-react"
 
@@ -304,6 +305,11 @@ export default function Home() {
                     <p className="text-muted-foreground text-sm text-center max-w-md mx-auto leading-relaxed">
                       Enter a query in the console to trigger the multi-agent arbitration workflow
                     </p>
+                  </div>
+                  
+                  {/* Router Status */}
+                  <div className="w-full max-w-md relative z-10 mt-6">
+                    <RouterStatus />
                   </div>
                 </motion.div>
               </motion.div>
