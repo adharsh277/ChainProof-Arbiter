@@ -143,7 +143,54 @@ npm run build
 npm start
 ```
 
-The app will be available at `http://localhost:3000`
+The app will be available at `http://localhost:3000` (or the next available port if 3000 is in use).
+
+### Local Router (Real Mode)
+
+To connect the UI to the local router server (router-server.py) instead of simulation mode:
+
+1. Ensure your environment file has these values:
+  ```dotenv
+  # Cortensor Router Configuration
+  CORTENSOR_ROUTER_URL=http://127.0.0.1:5010
+  CORTENSOR_API_KEY=YOUR_LOCAL_API_KEY
+
+  # Development Settings
+  NEXT_PUBLIC_DEV_MODE=true
+  NEXT_PUBLIC_SIMULATION_MODE=false
+  ```
+
+2. Start the router server with the same API key:
+  ```bash
+  API_KEY=YOUR_LOCAL_API_KEY python router-server.py
+  ```
+
+3. Start the Next.js dev server:
+  ```bash
+  npm run dev
+  ```
+
+4. Verify real connection:
+  ```bash
+  curl -s http://localhost:3000/api/router-status
+  ```
+  Expect `"mode":"real"` and `"status":"ready"`.
+
+### Simulation Mode (No API Key)
+
+If you do not want to run the router server, enable simulation mode:
+
+```dotenv
+NEXT_PUBLIC_SIMULATION_MODE=true
+```
+
+This uses the simulated client and returns realistic demo responses without authentication.
+
+### Troubleshooting
+
+- **401 Invalid API key**: The router server validates the `Authorization` header. Make sure `API_KEY` for router-server.py matches `CORTENSOR_API_KEY` in your `.env.local`.
+- **Port already in use**: Next.js will fall back to 3001/3002. Check the terminal output for the active port.
+- **Router not responding**: Ensure the router server is running on `http://127.0.0.1:5010` and that your `CORTENSOR_ROUTER_URL` matches.
 
 ### Testing & Replay
 
