@@ -10,6 +10,10 @@
 
 ---
 
+**Chain Proof Arbiter is a multi-agent disagreement resolver built on Cortensor that detects AI consensus instability and anchors disputed outcomes on-chain.**
+
+---
+
 ## 🎯 Overview
 
 **ChainProof Arbiter** is a research-grade multi-agent blockchain intelligence system that provides verifiable, unbiased risk analysis through:
@@ -24,7 +28,22 @@ This is not a demo—it's a production-ready platform for institutional-grade bl
 
 ---
 
-## 📸 Screenshots
+## � Agent Execution Loop
+
+ChainProof Arbiter implements a repeatable multi-agent workflow:
+
+- **User initializes arbitration session** → Query submitted with analysis type and context
+- **Agent dispatches inference across multiple models via Cortensor** → Each specialized agent runs 2+ inference passes
+- **Cross-run variance and divergence are measured** → Semantic alignment and consistency scores computed
+- **If instability exceeds threshold, escalation is triggered** → Low confidence or high disagreement triggers re-runs
+- **Arbitration result is committed on-chain** → Final decision bundled with cryptographic proof
+- **Evidence bundle is generated for auditability** → Complete chain of reasoning with session IDs and validator scores
+
+This loop ensures every decision is verifiable, repeatable, and backed by multi-agent consensus.
+
+---
+
+## �📸 Screenshots
 
 ### Main Dashboard
 ![ChainProof Arbiter Dashboard](./screenshots/chainproof.png)
@@ -204,7 +223,22 @@ npm run replay -- --help
 
 ---
 
-## 🛠️ Tech Stack
+## � Structured Outputs
+
+ChainProof Arbiter generates rich, validated outputs for integration with external systems:
+
+- **Trust Confidence Score** (0-100%) - Multi-agent agreement percentage
+- **Agent Divergence Metrics** - Risk score deltas, finding overlap, semantic alignment
+- **Stability Index** - Consensus stability, run variability, agent classification
+- **Heatmap Visualization** - Agent-to-agent divergence matrix with intensity indicators
+- **Evidence Bundle (JSON)** - Complete audit trail with Cortensor session IDs and validator scores
+- **Downloadable Validation Logs** - Reproducible analysis records for compliance and verification
+
+Every output is timestamped, session-linked, and ready for downstream integration (webhooks, monitoring systems, audit trails).
+
+---
+
+## �🛠️ Tech Stack
 
 **Frontend & Framework**
 - [Next.js 14](https://nextjs.org/) - React framework with App Router
@@ -290,11 +324,11 @@ Subtle gradient animations creating depth:
 
 ---
 
-## 🔗 Cortensor Integration
+## ⚙️ Cortensor Integration
 
-ChainProof Arbiter is built on **Cortensor Router v1** infrastructure for verifiable, decentralized multi-agent execution.
+ChainProof Arbiter is built on **Cortensor Sessions** for verifiable, decentralized multi-agent execution.
 
-### **Real Router v1 Integration**
+### **Uses Cortensor Sessions for Execution**
 
 Every inference request goes through Cortensor's routing layer:
 
@@ -303,21 +337,22 @@ Every inference request goes through Cortensor's routing layer:
 const { response, sessionId, latencyMs } = await callCortensorRouter(prompt)
 ```
 
-**Session Tracking:**
-- All Cortensor session IDs are logged and exposed in evidence bundles
-- Example: `session-1708905123456-a3f9k2`
-- Visible in UI timeline and downloadable artifacts
+### **Leverages Decentralized Inference Routing**
 
-**Validator Endpoint:**
-```typescript
-// PoUW validation via /validate endpoint
-const validation = await fetch('https://router.cortensor.ai/v1/validate', {
-  method: 'POST',
-  body: JSON.stringify({ output, rubric })
-})
-```
+- Cortensor Router v1 distributes inference across decentralized model providers
+- Load-balanced execution ensures no single point of failure
+- Multiple models queried simultaneously for consensus
+- Session-based tracking for auditability
 
-**Sample Evidence:**
+### **Multi-Run Validation for Cross-Model Agreement**
+
+- 2+ inference passes per agent to detect hallucinations
+- Cortensor sessions logged with unique IDs (e.g., `session-1708905123456-a3f9k2`)
+- Cross-run consistency verification ensures reliable outputs
+- Disagreement detected and flagged for escalation
+
+### **Evidence Bundles Generated Per Session**
+
 ```json
 {
   "evidence": {
@@ -332,6 +367,13 @@ const validation = await fetch('https://router.cortensor.ai/v1/validate', {
 }
 ```
 
+### **On-Chain Commitment for Final Arbitration**
+
+- Arbitration results can be anchored to blockchain for immutability
+- Evidence hashes committed on-chain for verifiable audit trail
+- Integration with blockchain explorers for public verification
+- Session IDs and timestamps ensure reproducibility
+
 ### **Environment Variables**
 
 ```bash
@@ -343,18 +385,32 @@ ALERT_WEBHOOK_URL=https://hooks.example.com/alerts
 
 ---
 
-## 🛡️ Safety & Constraints
+## 🛡️ Safety & Guardrails
 
 ChainProof Arbiter implements **strict operational guardrails** to ensure responsible AI execution:
 
-### **What This Agent REFUSES to Do**
+### **No Automatic On-Chain Commitment Without Divergence Threshold**
 
-❌ **Does not provide financial or investment advice**  
-❌ **Does not execute on-chain transactions autonomously**  
-❌ **Does not make trading recommendations**  
-❌ **Blocks analysis of unsupported/untrusted chains**
+- Only results with confidence > 80% are eligible for on-chain commitment
+- Divergence-triggered escalations prevent unreliable decisions from being anchored
+- Manual review gate ensures human oversight of critical decisions
+- Commitment happens only after validator score ≥ 7.0/10
 
-### **Autonomous Thresholds**
+### **Transparent Evidence Logging**
+
+- **All decisions logged with session IDs** - Every analysis tracked from inception
+- **Immutable proof bundles with timestamps** - Complete chain of reasoning preserved
+- **Audit trail for regulatory compliance** - Ready for third-party verification
+- **No hidden scoring mechanisms** - All rubric criteria and weights documented
+
+### **Explicit Model Selection**
+
+- User specifies analysis type (token-safety, contract-behavior, transaction-pattern)
+- Model routing determined by Cortensor based on declared intent
+- No silent fallback to alternative models without user notification
+- Session IDs link to specific model versions for reproducibility
+
+### **Autonomous Thresholds (Not Autonomous Execution)**
 
 | Metric | Threshold | Action |
 |--------|-----------|--------|
@@ -363,17 +419,23 @@ ChainProof Arbiter implements **strict operational guardrails** to ensure respon
 | **Risk Score** | > 85/100 | Trigger alert webhooks |
 | **Agreement Score** | < 80% | Auto re-run analysis |
 
-### **Rate Limiting**
+### **What This Agent REFUSES to Do**
+
+❌ **Does not provide financial or investment advice**  
+❌ **Does not execute on-chain transactions autonomously**  
+❌ **Does not make trading recommendations**  
+❌ **Blocks analysis of unsupported/untrusted chains**  
+❌ **No hidden biases or undisclosed scoring adjustments**
+
+### **Rate Limiting & Circuit Breakers**
+
 - Maximum 100 requests/hour per API key
 - Exponential backoff on Cortensor errors
 - Request deduplication (5-minute window)
-
-### **Evidence Logging**
-- All decisions logged with session IDs
-- Immutable proof bundles with timestamps
-- Audit trail for regulatory compliance
+- Automatic circuit breaker if validator score cascades below 5.0/10
 
 ### **Escalation Policy**
+
 When thresholds are exceeded:
 1. **Low Confidence** → Human review required
 2. **High Risk** → Alert sent via webhook + UI warning
@@ -541,7 +603,17 @@ This aligns ChainProof with the **"Real Operators"** track — not just analysis
 
 ---
 
-## 🏆 Hackathon Validation
+## � Why This Matters
+
+**AI systems today are opaque.** Chain Proof Arbiter ensures that high-impact decisions are structurally validated and publicly auditable through decentralized execution and on-chain anchoring.
+
+Instead of trusting a single model's output, Arbiter deploys multiple agents, cross-validates their reasoning, measures disagreement, and anchors trusted results on-chain. Every decision is reproducible, verifiable, and backed by cryptographic proof.
+
+This transforms AI from a **black box** into a **verifiable system** — essential for blockchain analysis, risk assessment, and any domain where trust must be earned, not assumed.
+
+---
+
+## �🏆 Hackathon Validation
 
 Built for **Cortensor Hackathon #4** with focus on:
 
