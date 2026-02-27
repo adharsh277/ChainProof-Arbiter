@@ -20,11 +20,17 @@ export function RouterStatus() {
   })
   const [loading, setLoading] = useState(false)
   const [testing, setTesting] = useState(false)
-  const [testResult, setTestResult] = useState<string>("")
+  const [testResult, setTestResult] = useState<{
+    success: boolean
+    sessionId?: string
+    latencyMs?: number
+    response?: string
+    error?: string
+  } | null>(null)
 
   const checkRouterStatus = async () => {
     setLoading(true)
-    setTestResult("")
+    setTestResult(null)
     
     try {
       const response = await fetch("/api/router-status")
@@ -52,7 +58,7 @@ export function RouterStatus() {
 
   const testInference = async () => {
     setTesting(true)
-    setTestResult("")
+    setTestResult(null)
 
     try {
       const response = await fetch("/api/test-router", {
@@ -66,14 +72,23 @@ export function RouterStatus() {
       const data = await response.json()
       
       if (data.success) {
-        setTestResult(
-          `✅ Test successful!\nSession ID: ${data.sessionId}\nLatency: ${data.latencyMs}ms\nResponse: ${data.response.substring(0, 100)}...`
-        )
+        setTestResult({
+          success: true,
+          sessionId: data.sessionId,
+          latencyMs: data.latencyMs,
+          response: data.response,
+        })
       } else {
-        setTestResult(`❌ Test failed: ${data.error}`)
+        setTestResult({
+          success: false,
+          error: data.error,
+        })
       }
     } catch (error) {
-      setTestResult(`❌ Test error: ${error instanceof Error ? error.message : "Unknown error"}`)
+      setTestResult({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      })
     } finally {
       setTesting(false)
     }
@@ -207,9 +222,49 @@ export function RouterStatus() {
           </Button>
 
           {testResult && (
-            <pre className="mt-3 text-xs text-white bg-zinc-900 p-3 rounded overflow-x-auto whitespace-pre-wrap">
-              {testResult}
-            </pre>
+            <div className="mt-3 rounded-lg border border-zinc-800 bg-gradient-to-br from-zinc-950 via-black to-zinc-900 p-3">
+              <div className="flex items-center justify-between">
+                <span
+                  className={`text-[11px] font-semibold tracking-wide px-2 py-0.5 rounded-full border ${
+                    testResult.success
+                      ? "text-emerald-300 border-emerald-500/40 bg-emerald-950/30"
+                      : "text-red-300 border-red-500/40 bg-red-950/30"
+                  }`}
+                >
+                  {testResult.success ? "Test Successful" : "Test Failed"}
+                </span>
+                <span className="text-[10px] text-zinc-500">Inference Snapshot</span>
+              </div>
+
+              {testResult.success ? (
+                <div className="mt-3 space-y-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-md border border-cyan-500/30 bg-cyan-950/30 px-2 py-1">
+                      <div className="text-[10px] text-cyan-300/80">Latency</div>
+                      <div className="text-sm text-cyan-100">
+                        {Math.round(testResult.latencyMs || 0)}ms
+                      </div>
+                    </div>
+                    <div className="rounded-md border border-purple-500/30 bg-purple-950/30 px-2 py-1">
+                      <div className="text-[10px] text-purple-300/80">Session</div>
+                      <div className="text-[11px] text-purple-100 truncate">
+                        {testResult.sessionId}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded-md border border-zinc-800 bg-black/50 p-2">
+                    <div className="text-[10px] text-zinc-400">Response</div>
+                    <p className="text-xs text-zinc-200 leading-relaxed">
+                      {testResult.response?.substring(0, 120)}...
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-md border border-red-900/50 bg-red-950/30 p-2">
+                  <p className="text-xs text-red-300">{testResult.error}</p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
