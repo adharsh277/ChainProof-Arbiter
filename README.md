@@ -26,10 +26,6 @@ This is not a demo—it's a production-ready platform for institutional-grade bl
 
 ## 📸 Screenshots
 
-## 📸 Screenshots
-
-## 📸 Screenshots
-
 ### Main Dashboard
 ![ChainProof Arbiter Dashboard](./screenshots/chainproof.png)
 
