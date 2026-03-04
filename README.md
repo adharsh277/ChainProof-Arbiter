@@ -10,7 +10,6 @@
 
 ---
 
-
 **Chain Proof Arbiter is a multi-agent disagreement resolver built on Cortensor that detects AI consensus instability and anchors disputed outcomes on-chain.**
 
 ---
