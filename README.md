@@ -3,6 +3,7 @@
 > **Infrastructure-Grade Multi-Agent Blockchain Intelligence Platform**  
 > Built for Cortensor Hackathon #4 | Powered by Multi-Agent Coordination, PoI & PoUW
 
+
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![Cortensor](https://img.shields.io/badge/Cortensor-Integrated-purple?style=flat)](https://cortensor.ai/)
